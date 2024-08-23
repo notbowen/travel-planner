@@ -6,7 +6,7 @@ const formSchema = z.object({
     start: z.string().min(1),
     end: z.string().optional(),
     places: z.string().min(1),
-    mode: z.enum(["driving", "walking", "bicycling", "transit"]),
+    mode: z.enum(["drive", "walking", "bicycling", "transit"]),
 })
 
 export async function submitForm(formData: FormData) {
@@ -18,9 +18,9 @@ export async function submitForm(formData: FormData) {
     })
 
     // Extract variables
-    const start = encodeURIComponent(parsed.start);
-    const end = parsed.end === undefined ? encodeURIComponent(parsed.end ?? '') : start;
-    const places = parsed.places.split('\n').map(place => encodeURIComponent(place.replace('\r', '')));
+    const start = parsed.start;
+    const end = parsed.end === undefined ? parsed.end ?? '' : start;
+    const places = parsed.places.split('\n').map(place => place.replace('\r', ''));
 
     // Make API call to Google Maps API with optimization
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -36,15 +36,31 @@ export async function submitForm(formData: FormData) {
     const final_route = [start, ...waypoint_order.map((index: number) => places[index]), end];
 
     // Loop through each destination and calculate transit time
+    const routeApiUrl = "https://routes.googleapis.com/directions/v2:computeRoutes";
+    const headers = new Headers({
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey ?? "",
+        "X-Goog-FieldMask": "routes.duration"
+    });
+
     const timings = await Promise.all(final_route.map(async (_, index) => {
         if (index == final_route.length - 1) return;
 
-        const routeApiUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${final_route[index]}&destination=${final_route[index + 1]}&mode=${parsed.mode}&key=${apiKey}`;
-        const response = await fetch(routeApiUrl).then(res => res.json());
+        const data = JSON.stringify({
+            "origin": { "address": final_route[index] },
+            "destination": { "address": final_route[index + 1] },
+            "travelMode": parsed.mode.toUpperCase(),
+            "computeAlternativeRoutes": false,
+        });
+
+        const response = await fetch(routeApiUrl, { method: "POST", headers, body: data }).then(res => res.json());
 
         try {
-            return response["routes"][0]["legs"][0]["duration"]["text"];
+            // Convert duration from seconds to minutes
+            const seconds = parseInt(response["routes"][0]["duration"].replace('s', ''));
+            return `${Math.ceil(seconds / 60)} min(s)`;
         } catch (e) {
+            console.log(JSON.stringify(response));
             return "Route not found";
         }
     }));

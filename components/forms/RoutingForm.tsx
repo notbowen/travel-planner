@@ -16,7 +16,7 @@ const formSchema = z.object({
     start: z.string().min(1),
     end: z.string().optional(),
     places: z.string().min(1),
-    mode: z.enum(["driving", "walking", "bicycling", "transit"]),
+    mode: z.enum(["drive", "walking", "bicycling", "transit"]),
 })
 
 export function RoutingForm() {
@@ -102,7 +102,7 @@ export function RoutingForm() {
                                             <SelectValue placeholder="Select a mode of travel"/>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="driving">Driving</SelectItem>
+                                            <SelectItem value="drive">Driving</SelectItem>
                                             <SelectItem value="walking">Walking</SelectItem>
                                             <SelectItem value="bicycling">Bicycling</SelectItem>
                                             <SelectItem value="transit">Transit</SelectItem>
