@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { submitForm } from "@/app/actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const formSchema = z.object({
     start: z.string().min(1),

@@ -55,7 +55,7 @@ export async function submitForm(formData: FormData) {
 
         return {
             start: decodeURIComponent(place),
-            end: decodeURIComponent(final_route[index+1]),
+            end: decodeURIComponent(final_route[index + 1]),
             duration: timings[index]
         }
     })
